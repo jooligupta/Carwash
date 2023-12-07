@@ -356,7 +356,10 @@ class AuthController {
         if (user.email === email && isMatched) {
           res
             .status(200)
-            .json({ message: "Congrulation User sucessfully Login!...." });
+            .json({
+              message: "Congrulation User sucessfully Login!....",
+              user,
+            });
         } else {
           res.status(500).json({ message: "email and password not match" });
         }
