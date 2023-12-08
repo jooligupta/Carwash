@@ -160,7 +160,7 @@ class AuthController {
       const { email } = req.body;
       const user = await OTPModel.findOne({ email: email });
       if (user) {
-        return res.status(500).json({
+        return res.json({
           success: true,
           message: "User already registered!...",
         });
@@ -207,13 +207,16 @@ class AuthController {
             .json({ success: false, message: "Internal Server Error" });
         });
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       res
         .status(500)
         .json({ success: false, message: "Internal Server Error" });
     }
   };
-
+  // static sendotp = async (req, res) => {
+  //   try {
+  //   } catch (err) {}
+  // };
   static verifyotp = async (req, res) => {
     try {
       const {
