@@ -2,16 +2,26 @@ const ContactModel = require("../Models/Contact");
 class ContactController {
   static createcontact = async (req, res) => {
     try {
-      const data = await ContactModel({
-        firstname: req.body.firstname,
-        lastname: req.body.lastname,
-        email: req.body.email,
-        contactnumber: req.body.contactnumber,
-        alternatenumber: req.body.alternatenumber,
-        message: req.body.message,
-        messagetitle: req.body.messagetitle,
-      });
+      // const data = await ContactModel({
+      //   firstname: req.body.firstname,
+      //   lastname: req.body.lastname,
+      //   email: req.body.email,
+      //   contactnumber: req.body.contactnumber,
+      //   alternatenumber: req.body.alternatenumber,
+      //   message: req.body.message,
+      //   messagetitle: req.body.messagetitle,
+      //   address: {
+      //     locality: req.body.locality,
+      //     city: req.body.city,
+      //     district: req.body.district,
+      //     state: req.body.state,
+      //     pincode: req.body.pincode,
+      //   },
+      // });
+      let d = req.body;
+      let data = await ContactModel.create(d);
       await data.save();
+      // await data.save();
       res.status(200).json({ msg: "Contact successfully created!..", data });
     } catch (err) {
       res.status(500).json({ message: "Internal Server Error" + err });

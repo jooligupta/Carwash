@@ -5,6 +5,7 @@ class UserController {
     try {
       let d = req.body;
       let data = await UserModel.create(d);
+      await data.save();
       res
         .status(200)
         .json({ msg: "supervisior successfully created!...", data });

@@ -22,8 +22,16 @@ const ContactSchema = new mongoose.Schema(
     message: {
       type: String,
     },
+
     messagetitle: {
       type: String,
+    },
+    address: {
+      locality: { type: String, default: " " },
+      city: { type: String, default: " " },
+      district: { type: String, default: " " },
+      state: { type: String, default: " " },
+      pincode: { type: Number, default: " " },
     },
   },
   { timestamps: true }
