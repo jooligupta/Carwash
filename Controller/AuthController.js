@@ -131,13 +131,22 @@ class AuthController {
       });
 
       // Save OTP in MongoDB
-      const otpRecord = new OTPModel({
-        email: email,
-        otp: otp.toString(), // Convert OTP to string before saving
-      });
+      // const otpRecord = new OTPModel({
+      //   email: email,
+      //   otp: otp.toString(), // Convert OTP to string before saving
+      // });
 
-      await otpRecord.save();
-      res.status(500).json({ success: true, message: "Success", otpRecord });
+      // await otpRecord.save();
+      transporter.sendMail(info, (err, result) => {
+        if (err) {
+          console.log("Error is sending Mail", err);
+        }
+      });
+      res.status(200).json({
+        message: "OTP resent successfully. Check your email for OTP.",
+        otp: otp,
+      });
+      // res.status(500).json({ success: true, message: "Success", otpRecord });
     } catch (error) {
       console.error(error);
       res
@@ -354,12 +363,10 @@ class AuthController {
       if (user != null) {
         const isMatched = await bcrypt.compare(password, user.password);
         if (user.email === email && isMatched) {
-          res
-            .status(200)
-            .json({
-              message: "Congrulation User sucessfully Login!....",
-              user,
-            });
+          res.status(200).json({
+            message: "Congrulation User sucessfully Login!....",
+            user,
+          });
         } else {
           res.status(500).json({ message: "email and password not match" });
         }
