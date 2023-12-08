@@ -99,12 +99,68 @@ class AuthController {
   //       .json({ success: false, message: "Internal Server Error" });
   //   }
   // };
+  // static sendotp = async (req, res) => {
+  //   try {
+  //     const { email } = req.body;
+  //     const user = await OTPModel.findOne({ email: email });
+  //     if (user) {
+  //       res.status(500).json({
+  //         success: true,
+  //         message: "User already registered!...",
+  //       });
+  //     }
+
+  //     const otp = Math.floor(100000 + Math.random() * 900000);
+
+  //     // Nodemailer setup
+  //     const transporter = nodemailer.createTransport({
+  //       service: "gmail",
+  //       auth: {
+  //         user: "jooligupta2000@gmail.com",
+  //         pass: "izdmwplsjbdmuiim",
+  //       },
+  //     });
+
+  //     // Send OTP email
+  //     const info = await transporter.sendMail({
+  //       from: '"Your Name" <jooligupta2000@gmail.com>', // Update with your name and email
+  //       to: email,
+  //       subject: "Email Verification OTP",
+  //       text: `Your OTP for email verification is: ${otp}`,
+  //       html: `<b>Your OTP for email verification is: ${otp}</b>`,
+  //     });
+
+  //     // Save OTP in MongoDB
+  //     const otpRecord = new OTPModel({
+  //       email: email,
+  //       otp: otp.toString(), // Convert OTP to string before saving
+  //     });
+
+  //     await otpRecord.save();
+  //     transporter.sendMail(info, (err, result) => {
+  //       if (err) {
+  //         console.log("Error is sending Mail", err);
+  //       }
+  //     });
+  //     res.status(200).json({
+  //       message: "OTP resent successfully. Check your email for OTP.",
+  //       otp: otp,
+  //     });
+  //     // res.status(500).json({ success: true, message: "Success", otpRecord });
+  //   } catch (error) {
+  //     console.error(error);
+  //     res
+  //       .status(500)
+  //       .json({ success: false, message: "Internal Server Error" });
+  //   }
+  // };
+  // static sendotp = async (req, res) => {};
   static sendotp = async (req, res) => {
     try {
       const { email } = req.body;
       const user = await OTPModel.findOne({ email: email });
       if (user) {
-        res.status(500).json({
+        return res.status(500).json({
           success: true,
           message: "User already registered!...",
         });
@@ -123,7 +179,7 @@ class AuthController {
 
       // Send OTP email
       const info = await transporter.sendMail({
-        from: '"Your Name" <jooligupta2000@gmail.com>', // Update with your name and email
+        from: '"Your Name" <jooligupta2000@gmail.com>',
         to: email,
         subject: "Email Verification OTP",
         text: `Your OTP for email verification is: ${otp}`,
@@ -131,22 +187,25 @@ class AuthController {
       });
 
       // Save OTP in MongoDB
-      // const otpRecord = new OTPModel({
-      //   email: email,
-      //   otp: otp.toString(), // Convert OTP to string before saving
-      // });
+      const otpRecord = new OTPModel({
+        email: email,
+        otp: otp.toString(),
+      });
 
-      // await otpRecord.save();
-      transporter.sendMail(info, (err, result) => {
-        if (err) {
-          console.log("Error is sending Mail", err);
-        }
-      });
-      res.status(200).json({
-        message: "OTP resent successfully. Check your email for OTP.",
-        otp: otp,
-      });
-      // res.status(500).json({ success: true, message: "Success", otpRecord });
+      otpRecord
+        .save()
+        .then(() => {
+          res.status(200).json({
+            message: "OTP resent successfully. Check your email for OTP.",
+            otp: otp,
+          });
+        })
+        .catch((saveError) => {
+          console.error("Error saving OTP to MongoDB", saveError);
+          res
+            .status(500)
+            .json({ success: false, message: "Internal Server Error" });
+        });
     } catch (error) {
       console.error(error);
       res
@@ -154,6 +213,7 @@ class AuthController {
         .json({ success: false, message: "Internal Server Error" });
     }
   };
+
   static verifyotp = async (req, res) => {
     try {
       const {
