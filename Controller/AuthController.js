@@ -240,16 +240,16 @@ class AuthController {
 
       // Find the user with the given email and OTP
       // const user = await OTPModel.findOne({ email: email, otp: otp });
-      const user = await OTPModel.findOne({ email: email }).maxTimeMS(10000);
-      console.log("user", user);
+      // const user = await OTPModel.findOne({ email: email }).maxTimeMS(10000);
+      // console.log("user", user);
 
-      if (!user) {
-        res.status(400).json({
-          success: false,
-          message: "Invalid OTP. Please check your email.",
-        });
-        return;
-      }
+      // if (!user) {
+      //   res.status(400).json({
+      //     success: false,
+      //     message: "Invalid OTP. Please check your email.",
+      //   });
+      //   return;
+      // }
       const hashPassword = await bcrypt.hash(password, 10);
 
       // Check if OTP is expired (2 minutes duration)
