@@ -2,6 +2,7 @@ const UserModel = require("../Models/User");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const OTPModel = require("../Models/OTP");
+const jwt = require("jsonwebtoken");
 class AuthController {
   static userregister = async (req, res) => {
     const {
@@ -393,22 +394,27 @@ class AuthController {
   };
   static resetPassword = async (req, res) => {
     try {
-      const { email, otp, newPassword } = req.body;
-      const user = await UserModel.findOne({ email: email, otp });
-      if (!user) {
-        return res.status(400).json({ success: false, message: "Invalid OTP" });
-      }
+      const { newPassword, confirmpassword } = req.body;
+      // const user = await UserModel.findOne({ email: email });
+      // if (!user) {
+      //   return res.status(500).json({ success: false, message: "Invalid OTP" });
+      // }
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-      user.password = hashedPassword;
-      user.otp = null;
+      newPassword = hashedPassword;
+      // user.otp = null;
       // user.passWord = newPassword;
       // user.otp = null;
-
-      let x = await user.save();
-      console.log(x),
+      if (newPassword === confirmpassword) {
+        let x = await user.save();
+        console.log(x),
+          res
+            .status(200)
+            .json({ success: true, message: "Password reset successful" });
+      } else {
         res
-          .status(200)
-          .json({ success: true, message: "Password reset successful" });
+          .status(400)
+          .json({ success: true, message: "Password not matched" });
+      }
     } catch (err) {
       res.status(500).json({ message: "Internal Server Error" + err });
     }
@@ -417,26 +423,61 @@ class AuthController {
   //   try {
   //   } catch (err) {}
   // };
+  // static login = async (req, res) => {
+  //   const { email, password } = req.body;
+  //   if (email && password) {
+  //     const user = await UserModel.findOne({ email: email });
+  //     console.log(user);
+  //     if (user != null) {
+  //       const isMatched = await bcrypt.compare(password, user.password);
+  //       if (user.email === email && isMatched) {
+  //         res.status(200).json({
+  //           message: "Congrulation User sucessfully Login!....",
+  //           user,
+  //         });
+  //       } else {
+  //         res.status(500).json({ message: "email and password not match" });
+  //       }
+  //     } else {
+  //       res.status(500).json({ message: "you are not registered user" });
+  //     }
+  //   } else {
+  //     res.status(500).json({ message: "All field are required" });
+  //   }
+  // };
   static login = async (req, res) => {
     const { email, password } = req.body;
     if (email && password) {
-      const user = await UserModel.findOne({ email: email });
-      console.log(user);
-      if (user != null) {
-        const isMatched = await bcrypt.compare(password, user.password);
-        if (user.email === email && isMatched) {
-          res.status(200).json({
-            message: "Congrulation User sucessfully Login!....",
-            user,
-          });
+      try {
+        const user = await UserModel.findOne({ email: email });
+        if (user != null) {
+          const isMatched = await bcrypt.compare(password, user.password);
+          if (user.email === email && isMatched) {
+            // Generate a JWT token
+            const token = jwt.sign(
+              { userId: user._id, email: user.email },
+              "your_secret_key",
+              { expiresIn: "1h" }
+            );
+
+            res.status(200).json({
+              message: "Congratulations! User successfully logged in.",
+              user,
+              token,
+            });
+          } else {
+            res
+              .status(500)
+              .json({ message: "Email and password do not match" });
+          }
         } else {
-          res.status(500).json({ message: "email and password not match" });
+          res.status(500).json({ message: "You are not a registered user" });
         }
-      } else {
-        res.status(500).json({ message: "you are not registered user" });
+      } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
       }
     } else {
-      res.status(500).json({ message: "All field are required" });
+      res.status(500).json({ message: "All fields are required" });
     }
   };
 }
