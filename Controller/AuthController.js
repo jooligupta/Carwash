@@ -392,33 +392,34 @@ class AuthController {
       res.status(500).json({ message: "Internal Server Error" + err });
     }
   };
-  static resetPassword = async (req, res) => {
-    try {
-      const { newPassword, confirmpassword } = req.body;
-      // const user = await UserModel.findOne({ email: email });
-      // if (!user) {
-      //   return res.status(500).json({ success: false, message: "Invalid OTP" });
-      // }
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      newPassword = hashedPassword;
-      // user.otp = null;
-      // user.passWord = newPassword;
-      // user.otp = null;
-      if (newPassword === confirmpassword) {
-        let x = await user.save();
-        console.log(x),
-          res
-            .status(200)
-            .json({ success: true, message: "Password reset successful" });
-      } else {
-        res
-          .status(400)
-          .json({ success: true, message: "Password not matched" });
-      }
-    } catch (err) {
-      res.status(500).json({ message: "Internal Server Error" + err });
-    }
-  };
+  // static resetPassword = async (req, res) => {
+  //   try {
+  //     const { newPassword, confirmpassword } = req.body;
+  //     // const user = await UserModel.findOne({ email: email });
+  //     // if (!user) {
+  //     //   return res.status(500).json({ success: false, message: "Invalid OTP" });
+  //     // }
+  //     const hashedPassword = await bcrypt.hash(newPassword, 10);
+  //     newPassword = hashedPassword;
+  //     // user.otp = null;
+  //     // user.passWord = newPassword;
+  //     // user.otp = null;
+  //     if (newPassword === confirmpassword) {
+  //       let x = await user.save();
+  //       console.log(x),
+  //         res
+  //           .status(200)
+  //           .json({ success: true, message: "Password reset successful" });
+  //     } else {
+  //       res
+  //         .status(400)
+  //         .json({ success: true, message: "Password not matched" });
+  //     }
+  //   } catch (err) {
+  //     res.status(500).json({ message: "Internal Server Error" + err });
+  //   }
+  // };
+
   // static forgetpassword = async (req, res) => {
   //   try {
   //   } catch (err) {}
@@ -445,6 +446,60 @@ class AuthController {
   //     res.status(500).json({ message: "All field are required" });
   //   }
   // };
+  static resetPassword = async (req, res) => {
+    //console.log(req.user)
+    try {
+      console.log(req.user._id);
+
+      const { oldPassword, newPassword, confirmPassword } = req.body;
+      if (oldPassword && newPassword && confirmPassword) {
+        const user = await UserModel.findById(req.user._id).select("+password");
+        console.log(user);
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        //const isPasswordMatched = await userModel.comparePassword(req.body.oldPassword);
+        console.log(isMatch);
+        if (!isMatch) {
+          return res.send({
+            status: 400,
+            message: "Old password is incorrect",
+          });
+        } else {
+          if (newPassword !== confirmPassword) {
+            return res.send({
+              status: "failed",
+              message: "password does not match",
+            });
+          } else {
+            const salt = await bcrypt.genSalt(10);
+            const newHashPassword = await bcrypt.hash(newPassword, salt);
+            //console.log(req.user)
+            await UserModel.findByIdAndUpdate(req.user._id, {
+              $set: { password: newHashPassword },
+            });
+            return res.send({
+              status: "success",
+              message: "Password changed succesfully",
+            });
+          }
+        }
+      } else {
+        return res.send({
+          status: "failed",
+          message: "All Fields are Required",
+        });
+      }
+    } catch (err) {
+      return res.send(err);
+    }
+  };
+  static logoutUser = async (req, res) => {
+    try {
+      res.clearCookie("token");
+      res.send({ status: "success", message: "Logout Successfully!...." });
+    } catch (err) {
+      console.log(err);
+    }
+  };
   static login = async (req, res) => {
     const { email, password } = req.body;
     if (email && password) {
