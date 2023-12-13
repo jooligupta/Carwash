@@ -40,80 +40,13 @@ class AuthController {
       res.status(500).json({ message: "Internal Server Error" + err });
     }
   };
-  static sendotp = async function (req, res) {
-    try {
-      const { email } = req.body;
-
-      const otp = Math.floor(100000 + Math.random() * 900000);
-
-      var transport = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: "jooligupta2000@gmail.com",
-          pass: "izdmwplsjbdmuiim",
-        },
-      });
-
-      const info = await transport.sendMail({
-        from: '"Your Name" <jooligupta2000@gmail.com>', // Update with your name and email
-        to: email,
-        subject: "Email Verification OTP",
-        text: `Your OTP for email verification is: ${otp}`,
-        html: `<b>Your OTP for email verification is: ${otp}</b>`,
-      });
-      // Save OTP in MongoDB
-      // const otpRecord = new OTPModel({
-      //   email: email,
-      //   otp: otp.toString(), // Convert OTP to string before saving
-      // });
-
-      transport.sendMail(info, (err, result) => {
-        if (err) {
-          console.log("Error");
-        }
-        // otpRecord.save((err, result) => {
-        if (err) {
-          console.log("Error saving OTP to MongoDB:", err);
-          res.status(500).json({
-            success: false,
-            message: "Internal Server Error - Failed to save OTP",
-          });
-        } else {
-          // console.log("OTP saved to MongoDB:", result);
-
-          res.status(200).json({
-            message: "OTP sent successfully. Check your email for OTP.",
-            otp: otp,
-          });
-        }
-      });
-
-      // res.status(200).json({
-      //   message: "OTP sent successfully. Check your email for OTP.",
-      //   otp: otp,
-      // });
-    } catch (error) {
-      console.error(error);
-      res
-        .status(500)
-        .json({ success: false, message: "Internal Server Error" });
-    }
-  };
-  // static sendotp = async (req, res) => {
+  // static sendotp = async function (req, res) {
   //   try {
   //     const { email } = req.body;
-  //     const user = await OTPModel.findOne({ email: email });
-  //     if (user) {
-  //       res.status(500).json({
-  //         success: true,
-  //         message: "User already registered!...",
-  //       });
-  //     }
 
   //     const otp = Math.floor(100000 + Math.random() * 900000);
 
-  //     // Nodemailer setup
-  //     const transporter = nodemailer.createTransport({
+  //     var transport = nodemailer.createTransport({
   //       service: "gmail",
   //       auth: {
   //         user: "jooligupta2000@gmail.com",
@@ -121,32 +54,44 @@ class AuthController {
   //       },
   //     });
 
-  //     // Send OTP email
-  //     const info = await transporter.sendMail({
+  //     const info = await transport.sendMail({
   //       from: '"Your Name" <jooligupta2000@gmail.com>', // Update with your name and email
   //       to: email,
   //       subject: "Email Verification OTP",
   //       text: `Your OTP for email verification is: ${otp}`,
   //       html: `<b>Your OTP for email verification is: ${otp}</b>`,
   //     });
-
   //     // Save OTP in MongoDB
-  //     const otpRecord = new OTPModel({
-  //       email: email,
-  //       otp: otp.toString(), // Convert OTP to string before saving
-  //     });
+  //     // const otpRecord = new OTPModel({
+  //     //   email: email,
+  //     //   otp: otp.toString(), // Convert OTP to string before saving
+  //     // });
 
-  //     await otpRecord.save();
-  //     transporter.sendMail(info, (err, result) => {
+  //     transport.sendMail(info, (err, result) => {
   //       if (err) {
-  //         console.log("Error is sending Mail", err);
+  //         console.log("Error");
+  //       }
+  //       // otpRecord.save((err, result) => {
+  //       if (err) {
+  //         console.log("Error saving OTP to MongoDB:", err);
+  //         res.status(500).json({
+  //           success: false,
+  //           message: "Internal Server Error - Failed to save OTP",
+  //         });
+  //       } else {
+  //         // console.log("OTP saved to MongoDB:", result);
+
+  //         res.status(200).json({
+  //           message: "OTP sent successfully. Check your email for OTP.",
+  //           otp: otp,
+  //         });
   //       }
   //     });
-  //     res.status(200).json({
-  //       message: "OTP resent successfully. Check your email for OTP.",
-  //       otp: otp,
-  //     });
-  //     // res.status(500).json({ success: true, message: "Success", otpRecord });
+
+  //     // res.status(200).json({
+  //     //   message: "OTP sent successfully. Check your email for OTP.",
+  //     //   otp: otp,
+  //     // });
   //   } catch (error) {
   //     console.error(error);
   //     res
@@ -154,6 +99,61 @@ class AuthController {
   //       .json({ success: false, message: "Internal Server Error" });
   //   }
   // };
+  static sendotp = async (req, res) => {
+    try {
+      const { email } = req.body;
+      const user = await UserModel.findOne({ email: email });
+      if (user) {
+        res.status(500).json({
+          success: true,
+          message: "User already registered!...",
+        });
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000);
+
+      // Nodemailer setup
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "jooligupta2000@gmail.com",
+          pass: "izdmwplsjbdmuiim",
+        },
+      });
+
+      // Send OTP email
+      const info = await transporter.sendMail({
+        from: '"Your Name" <jooligupta2000@gmail.com>', // Update with your name and email
+        to: email,
+        subject: "Email Verification OTP",
+        text: `Your OTP for email verification is: ${otp}`,
+        html: `<b>Your OTP for email verification is: ${otp}</b>`,
+      });
+
+      // Save OTP in MongoDB
+      // const otpRecord = new OTPModel({
+      //   email: email,
+      //   otp: otp.toString(), // Convert OTP to string before saving
+      // });
+
+      // await otpRecord.save();
+      // transporter.sendMail(info, (err, result) => {
+      //   if (err) {
+      //     console.log("Error is sending Mail", err);
+      //   }
+      // });
+      res.status(200).json({
+        message: "OTP resent successfully. Check your email for OTP.",
+        otp: otp,
+      });
+      // res.status(500).json({ success: true, message: "Success", otpRecord });
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .json({ success: false, message: "Internal Server Error" });
+    }
+  };
   // static sendotp = async (req, res) => {};
   // static sendotp = async (req, res) => {
   //   try {
@@ -451,11 +451,11 @@ class AuthController {
     try {
       console.log(req.user._id);
 
-      const { oldPassword, newPassword, confirmPassword } = req.body;
-      if (oldPassword && newPassword && confirmPassword) {
+      const { newPassword, confirmPassword } = req.body;
+      if (newPassword && confirmPassword) {
         const user = await UserModel.findById(req.user._id).select("+password");
         console.log(user);
-        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        const isMatch = await bcrypt.compare(user.password);
         //const isPasswordMatched = await userModel.comparePassword(req.body.oldPassword);
         console.log(isMatch);
         if (!isMatch) {
