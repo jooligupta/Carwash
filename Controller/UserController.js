@@ -28,19 +28,16 @@ class UserController {
   static getsupervisior = async (req, res) => {
     let pages = req.query.pages;
     let role = req.query.role; // assuming the role is passed in the query parameters
-
     try {
+      console.log("user", req.user._id);
       let query = {};
-
       // If role is provided, add it to the query
       if (role) {
         query = { role: role };
       }
-
       let user = await UserModel.find(query)
         .skip(10 * (pages - 1))
         .limit(10); // pagination of 10 user details
-
       res.status(200).json(user);
     } catch (error) {
       res.status(500).json({ msg: "Data Not Found" });

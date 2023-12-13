@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Connectdb = require("./db/ConnectDb");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
+const cookieParser = require("cookie-parser");
 var cors = require("cors");
 
 const app = express();
@@ -14,6 +15,7 @@ dotenv.config({
 app.use(bodyParser.json());
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use("/api/v1", web);
 Connectdb();
 

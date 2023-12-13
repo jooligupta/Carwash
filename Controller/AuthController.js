@@ -285,74 +285,74 @@ class AuthController {
     }
   };
 
-  static registration = async (req, res) => {
-    const {
-      firstname,
-      lastname,
-      address,
-      email,
-      password,
-      mobilenumber,
-      alternatenumber,
-    } = req.body;
-    try {
-      const existinguser = await UserModel.findOne({ email: email });
-      if (existinguser) {
-        return res.status(401).json({ message: "Username already exists" });
-      } else {
-        const otp = Math.floor(100000 + Math.random() * 900000);
+  // static registration = async (req, res) => {
+  //   const {
+  //     firstname,
+  //     lastname,
+  //     address,
+  //     email,
+  //     password,
+  //     mobilenumber,
+  //     alternatenumber,
+  //   } = req.body;
+  //   try {
+  //     const existinguser = await UserModel.findOne({ email: email });
+  //     if (existinguser) {
+  //       return res.status(401).json({ message: "Username already exists" });
+  //     } else {
+  //       const otp = Math.floor(100000 + Math.random() * 900000);
 
-        var transport = nodemailer.createTransport({
-          service: "gmail",
-          auth: {
-            user: "jooligupta2000@gmail.com",
-            pass: "izdmwplsjbdmuiim",
-          },
-        });
+  //       var transport = nodemailer.createTransport({
+  //         service: "gmail",
+  //         auth: {
+  //           user: "jooligupta2000@gmail.com",
+  //           pass: "izdmwplsjbdmuiim",
+  //         },
+  //       });
 
-        const info = await transport.sendMail({
-          from: '"Your Name" <jooligupta2000@gmail.com>', // Update with your name and email
-          to: email,
-          subject: "Email Verification OTP",
-          text: `Your OTP for email verification is: ${otp}`,
-          html: `<b>Your OTP for email verification is: ${otp}</b>`,
-        });
-        transport.sendMail(info, (err, result) => {
-          if (err) {
-            console.log("Error");
-          }
-        });
-        const hashPassword = await bcrypt.hash(password, 10);
-        const data = await UserModel({
-          firstname,
-          lastname,
-          address,
-          email,
-          password: hashPassword,
-          mobilenumber,
-          alternatenumber,
-        });
-        await data.save();
-        // .then((result) => {
-        //   verifyotp(result, res);
-        // })
-        // .catch((err) => {
-        //   res.json({ message: "failed" });
-        // });
+  //       const info = await transport.sendMail({
+  //         from: '"Your Name" <jooligupta2000@gmail.com>', // Update with your name and email
+  //         to: email,
+  //         subject: "Email Verification OTP",
+  //         text: `Your OTP for email verification is: ${otp}`,
+  //         html: `<b>Your OTP for email verification is: ${otp}</b>`,
+  //       });
+  //       transport.sendMail(info, (err, result) => {
+  //         if (err) {
+  //           console.log("Error");
+  //         }
+  //       });
+  //       const hashPassword = await bcrypt.hash(password, 10);
+  //       const data = await UserModel({
+  //         firstname,
+  //         lastname,
+  //         address,
+  //         email,
+  //         password: hashPassword,
+  //         mobilenumber,
+  //         alternatenumber,
+  //       });
+  //       await data.save();
+  //       // .then((result) => {
+  //       //   verifyotp(result, res);
+  //       // })
+  //       // .catch((err) => {
+  //       //   res.json({ message: "failed" });
+  //       // });
 
-        const result = await data.save();
-        res.status(200).json({
-          status: "success",
-          //  message: "User registration Successfully!...",
-          message: "OTP sent successfully. Check your email for OTP.",
-          result,
-          otp,
-        });
-      }
-    } catch (err) {
-      res.status(500).json({ message: "Internal Server Error" + err });
-    }
-  };
+  //       const result = await data.save();
+  //       res.status(200).json({
+  //         status: "success",
+  //         //  message: "User registration Successfully!...",
+  //         message: "OTP sent successfully. Check your email for OTP.",
+  //         result,
+  //         otp,
+  //       });
+  //     }
+  //   } catch (err) {
+  //     res.status(500).json({ message: "Internal Server Error" + err });
+  //   }
+  // };
 
   static forgetpassword = async (req, res) => {
     try {
@@ -454,11 +454,18 @@ class AuthController {
           const isMatched = await bcrypt.compare(password, user.password);
           if (user.email === email && isMatched) {
             // Generate a JWT token
+            // const token = jwt.sign(
+            //   { userId: user._id, email: user.email },
+            //   "your_secret_key",
+            //   { expiresIn: "1h" }
+            // );
             const token = jwt.sign(
-              { userId: user._id, email: user.email },
-              "your_secret_key",
+              { userId: user.id },
+              process.env.JWT_SECRETE_KEY,
               { expiresIn: "1h" }
             );
+            res.cookie("token", token);
+            console.log(token);
 
             res.status(200).json({
               message: "Congratulations! User successfully logged in.",
